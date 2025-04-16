@@ -2,6 +2,8 @@ from rest_framework.views import APIView
 from .serializers import UserSerializer
 from .models import UserProfile
 from rest_framework.response import Response
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.exceptions import InvalidToken, AuthenticationFailed
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from rest_framework.permissions import AllowAny
@@ -72,3 +74,24 @@ class Login(APIView):
 
         return response
        
+class UserView(APIView):
+    def get(self, request):
+        token = request.COOKIES.get('access_token')
+
+        if not token:
+            return Response(
+                {'error':'Token not found!'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        try:
+            validated_token = JWTAuthentication().get_validated_token(token)
+            user = JWTAuthentication.get_user(validated_token)
+        except(InvalidToken, AuthenticationFailed):
+            return Response(
+                {'error': 'Invalid or expired token!'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        serializer = UserSerializer(user)
+        return Response({'user':serializer.data}, status=status.HTTP_200_OK)
