@@ -96,3 +96,13 @@ class UserView(APIView):
         
         serializer = UserSerializer(user)
         return Response({'user':serializer.data}, status=status.HTTP_200_OK)
+    
+class Logout(APIView):
+    def post(self, request):
+        response = Response()
+        response.delete_cookie('access_token')
+        response.delete_cookie('refresh_token')
+        response.data = {
+            'message': "Logout successful"
+        }
+        return response
