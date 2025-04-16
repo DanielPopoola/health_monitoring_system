@@ -85,8 +85,9 @@ class UserView(APIView):
             )
         
         try:
-            validated_token = JWTAuthentication().get_validated_token(token)
-            user = JWTAuthentication.get_user(validated_token)
+            jwt_authenticator = JWTAuthentication()
+            validated_token = jwt_authenticator.get_validated_token(token)
+            user = jwt_authenticator.get_user(validated_token=validated_token)
         except(InvalidToken, AuthenticationFailed):
             return Response(
                 {'error': 'Invalid or expired token!'},
