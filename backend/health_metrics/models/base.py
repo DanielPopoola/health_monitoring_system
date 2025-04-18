@@ -1,9 +1,8 @@
-from managers import HealthMetricsManager
+from ..managers import HealthMetricsManager
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-from django.db.models import Avg, Max, Min, StdDev
 from datetime import timedelta
 
 User = get_user_model()
