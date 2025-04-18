@@ -4,7 +4,6 @@ from django.db.models import Avg, StdDev
 from datetime import timedelta
 
 
-# Create your models here.
 class HealthMetricsManager(models.Manager):
     """
     Model manager for querying objects
