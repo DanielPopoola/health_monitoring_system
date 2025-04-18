@@ -22,7 +22,7 @@ class SpO2(HealthMetric):
 
     def clean(self):
         if not (70 <= self.value <= 100):
-            raise ValidationError("SpO2 value must be between 70%\ and 100%")
+            raise ValidationError("SpO2 value must be between 70% and 100%")
         
     def is_within_normal_range(self):
         return self.value >= 95
