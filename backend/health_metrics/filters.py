@@ -1,6 +1,6 @@
 import django_filters
 from django.utils import timezone
-from django.contrib.auth import models
+from django.db import models
 from datetime import timedelta
 from .models import BloodPressure, DailySteps, HeartRate, SleepDuration, SpO2
 
