@@ -42,11 +42,11 @@ class HeartRate(HealthMetric):
             return 'Peak'
 
     @property
-    def is_tarchycardia(self):
+    def is_tachycardia(self):
         return self.value > 100
     
     @property
-    def is_bardycardia(self):
+    def is_bradycardia(self):
         return self.value < 60
     
     def get_resting_average(self):

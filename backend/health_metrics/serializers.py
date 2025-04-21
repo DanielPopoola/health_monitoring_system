@@ -56,8 +56,8 @@ class HeartRateSerializer(serializers.Serializer):
     """Serializer for HeartRate metrics"""
 
     heart_rate_zone = serializers.ReadOnlyField()
-    is_tarchycardia = serializers.ReadOnlyField()
-    is_bardycardia = serializers.ReadOnlyField()
+    is_tachycardia = serializers.ReadOnlyField()
+    is_bradycardia = serializers.ReadOnlyField()
 
     class Meta(HealthMetricsSerializer.Meta):
         model = HeartRate
