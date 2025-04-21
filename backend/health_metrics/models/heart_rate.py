@@ -52,7 +52,7 @@ class HeartRate(HealthMetric):
     def get_resting_average(self):
         return HeartRate.objects.filter(user=self.user, activity_level='resting').aaggregate(avg=Avg('value'))['avg']
     
-    def calculate_hrv(self, time_window=20):
+    def calculate_hrv(self, time_window=24):
         """
         Calculate heart rate variability using RMSSD method
         (Root Mean Square of Successive Differences)
