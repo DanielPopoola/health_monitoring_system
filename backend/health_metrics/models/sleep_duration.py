@@ -49,15 +49,13 @@ class SleepDuration(HealthMetric):
         delta = self.end_time - self.start_time
         return round(delta.total_seconds() / 3600, 2)
     
-    @property
+   
     def is_sufficient(self, age=None):
         """Determines if sleep duration meets recommended guidelines based on age."""
         min_sleep, max_sleep = 7, 9
 
         if age:
-            if age < 1:
-                min_sleep, max_sleep = 12,  16
-            elif age < 3:
+            if 1 <= age < 3:
                 min_sleep, max_sleep = 11, 14
             elif age < 6:
                 min_sleep, max_sleep = 10, 13
@@ -76,8 +74,37 @@ class SleepDuration(HealthMetric):
         midpoint_time = self.start_time + datetime.timedelta(hours=self.duration/2)
         return midpoint_time
     
-    def get_weekly_average(self):
-        pass
+    def get_weekly_average(self, days=7):
+        """
+        Calculate the average sleep duration over the past week (or specified days).
+
+        Args:
+            days (int): Number of days to look back (default: 7)
+
+        Returns:
+            float: Average sleep duration in hours over the specified period
+        """
+        end_date = timezone.now()
+        start_date = end_date - timezone.timedelta(days=days)
+
+        sleep_sessions = SleepDuration.objects.filter(
+            user=self.user,
+            start_time__gte=start_date,
+            end_time__lte=end_date
+        )
+        
+        if not sleep_sessions.exists():
+            return None
+        
+        # Calculate average duration directly
+        # Since duration is a property, we need to calculate it for each session
+        total_duration = sum(session.duration for session in sleep_sessions)
+        count = sleep_sessions.count()
+
+        if count == 0:
+            return None
+        
+        return round(total_duration / count, 2)
 
     def __str__(self):
         duration_str = f"{self.duration:.1f} hours" 
