@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import BloodPressure, DailySteps, SleepDuration, SpO2
+from .models import BloodPressure, DailySteps, HeartRate, SleepDuration, SpO2
 
 
 User = get_user_model()
@@ -45,7 +45,21 @@ class DailyStepsSerializer(HealthMetricsSerializer):
             'goal_percentage', 'active_level'
         ]
 
-class SleepDuration(HealthMetricsSerializer):
+class HeartRateSerializer(serializers.Serializer):
+    """Serializer for HeartRate metrics"""
+
+    heart_rate_zone = serializers.ReadOnlyField()
+    is_tarchycardia = serializers.ReadOnlyField()
+    is_bardycardia = serializers.ReadOnlyField()
+
+    class Meta(HealthMetricsSerializer.Meta):
+        model = HeartRate
+        fields = HealthMetricsSerializer.Meta.fields + [
+            'value', 'activity_level', 'heart_rate_zone',
+            'is_tarchycardia', 'is_bardycardia'
+        ]
+
+class SleepDurationSerializer(HealthMetricsSerializer):
     """Serializer for SleepDuration metrics"""
 
     duration = serializers.ReadOnlyField()
