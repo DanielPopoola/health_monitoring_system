@@ -13,9 +13,12 @@ class HealthMetricsSerializer(serializers.ModelSerializer):
     def get_full_name(self, obj):
         return f"{obj.user.first_name} {obj.user.last_name}".strip()
     
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+    
     class Meta:
         fields = ['id', 'user', 'full_name', 'timestamp', 'source', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'created_at', 'updated_at', 'full_name']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'full_name', 'user']
         abstract = True
 
 
