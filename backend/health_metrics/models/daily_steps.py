@@ -57,7 +57,7 @@ class DailySteps(HealthMetric):
 
         return self.__class__.objects.filter(
             user=self.user,
-            timestam__date__range=(start_date, end_date)
+            timestamp__date__range=(start_date, end_date)
         ).aggregate(avg_steps=Avg('count'))['avg_steps'] or 0
     
     def __str__(self):
