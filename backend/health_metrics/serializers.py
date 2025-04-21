@@ -5,7 +5,7 @@ from .models import BloodPressure, DailySteps, HeartRate, SleepDuration, SpO2
 
 User = get_user_model()
 
-class HealthMetricsSerializer(serializers.Serializer):
+class HealthMetricsSerializer(serializers.ModelSerializer):
     """Base serializer for all health metrics"""
     
     full_name = serializers.SerializerMethodField()
@@ -16,6 +16,7 @@ class HealthMetricsSerializer(serializers.Serializer):
     class Meta:
         fields = ['id', 'user', 'full_name', 'timestamp', 'source', 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at', 'full_name']
+        abstract = True
 
 
 class BloodPressureSerializer(HealthMetricsSerializer):
@@ -32,6 +33,9 @@ class BloodPressureSerializer(HealthMetricsSerializer):
             'bp_category', 'pulse_pressure', 'mean_arterial_pressure'
         ]
 
+    def create(self, validated_data):
+        return BloodPressure.objects.create(**validated_data)
+
 class DailyStepsSerializer(HealthMetricsSerializer):
     """Serializer for DailySteps metrics"""
 
@@ -44,6 +48,9 @@ class DailyStepsSerializer(HealthMetricsSerializer):
             'count', 'goal', 'device', 'distance',
             'goal_percentage', 'active_level'
         ]
+
+    def create(self, validated_data):
+        return DailySteps.objects.create(**validated_data)
 
 class HeartRateSerializer(serializers.Serializer):
     """Serializer for HeartRate metrics"""
@@ -59,6 +66,9 @@ class HeartRateSerializer(serializers.Serializer):
             'is_tarchycardia', 'is_bardycardia'
         ]
 
+    def create(self, validated_data):
+        return HeartRate.objects.create(**validated_data)
+
 class SleepDurationSerializer(HealthMetricsSerializer):
     """Serializer for SleepDuration metrics"""
 
@@ -73,6 +83,9 @@ class SleepDurationSerializer(HealthMetricsSerializer):
             'duration', 'is_sufficient', 'sleep_midpoint'
         ]
 
+    def create(self, validated_data):
+        return SleepDuration.objects.create(**validated_data)
+
 class SpO2Serializer(HealthMetricsSerializer):
     """Serializer for SpO2 metrics"""
     
@@ -84,3 +97,6 @@ class SpO2Serializer(HealthMetricsSerializer):
         fields = HealthMetricsSerializer.Meta.fields + [
             'value', 'measurement_method', 'is_normal', 'severity'
         ]
+
+    def create(self, validated_data):
+        return SpO2.objects.create(**validated_data)
