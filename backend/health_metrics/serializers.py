@@ -52,7 +52,7 @@ class DailyStepsSerializer(HealthMetricsSerializer):
     def create(self, validated_data):
         return DailySteps.objects.create(**validated_data)
 
-class HeartRateSerializer(serializers.Serializer):
+class HeartRateSerializer(HealthMetricsSerializer):
     """Serializer for HeartRate metrics"""
 
     heart_rate_zone = serializers.ReadOnlyField()
