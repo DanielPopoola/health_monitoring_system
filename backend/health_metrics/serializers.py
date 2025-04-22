@@ -66,7 +66,7 @@ class HeartRateSerializer(HealthMetricsSerializer):
         model = HeartRate
         fields = HealthMetricsSerializer.Meta.fields + [
             'value', 'activity_level', 'heart_rate_zone',
-            'is_tarchycardia', 'is_bardycardia'
+            'is_tachycardia', 'is_bradycardia'
         ]
 
     def create(self, validated_data):
