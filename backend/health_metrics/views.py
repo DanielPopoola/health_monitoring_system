@@ -650,13 +650,9 @@ class SpO2ViewSet(BaseHealthMetricsViewSet):
         
         queryset = self.get_queryset()
 
-        print("All readings:", list(queryset.values('id', 'value', 'timestamp')))
-
         start_date = timezone.now() - timedelta(days=days+1)
-        print(f"Filtering from: {start_date}")
 
         filtered_queryset = queryset.filter(timestamp__gte=start_date)
-        print("Filtered readings:", list(filtered_queryset.values('id', 'value', 'timestamp')))
 
         if not filtered_queryset.exists():
             return Response(
