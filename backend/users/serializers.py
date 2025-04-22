@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import UserProfile
-
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -32,3 +32,6 @@ class UserSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = 'email'
