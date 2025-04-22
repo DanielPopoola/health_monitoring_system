@@ -5,7 +5,7 @@ API_BASE_URL = "http://localhost:8000/api"
 
 def register_user(email, password, first_name: str, last_name: str, name: str, age: int, gender: str):
     response = requests.post(
-        f"{API_BASE_URL}/register",
+        f"{API_BASE_URL}/register/",
         json={
             "emai": email,
             "password": password,
