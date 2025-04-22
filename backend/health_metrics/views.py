@@ -4,6 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
+from django.db import models
 from datetime import timedelta  
 from .models import BloodPressure, DailySteps, HeartRate, SleepDuration, SpO2
 from .serializers  import (
@@ -277,7 +278,6 @@ def get_recommendation_message(bp_reading, age, is_within_range):
     return "Your blood pressure readings require attention based on your age group."
 
 
-
 class DailyStepsViewSet(BaseHealthMetricsViewSet):
     """ViewSet for DailySteps metrics"""
     queryset = DailySteps.objects.all()
@@ -406,7 +406,7 @@ class HeartRateViewSet(BaseHealthMetricsViewSet):
         },status=status.HTTP_200_OK)
     
     @action(detail=False, methods=['get'])
-    def baseline_comparsion(self, request):
+    def baseline_comparison(self, request):
         """
         End point for function compare_to_baseline in HeartRate class
         """
@@ -637,7 +637,7 @@ class SpO2ViewSet(BaseHealthMetricsViewSet):
         """Endpoint for get_lowest_reading in SpO2 class"""
         try:
             days = int(request.query_params.get('days', 7))
-            if days <= 0 or days >= 7:
+            if days <= 0 or days > 7:
                 return Response(
                     {"error": "Days parameter must be between 1 and 7"},
                     status=status.HTTP_400_BAD_REQUEST
@@ -650,19 +650,26 @@ class SpO2ViewSet(BaseHealthMetricsViewSet):
         
         queryset = self.get_queryset()
 
-        if not queryset.exists():
+        print("All readings:", list(queryset.values('id', 'value', 'timestamp')))
+
+        start_date = timezone.now() - timedelta(days=days+1)
+        print(f"Filtering from: {start_date}")
+
+        filtered_queryset = queryset.filter(timestamp__gte=start_date)
+        print("Filtered readings:", list(filtered_queryset.values('id', 'value', 'timestamp')))
+
+        if not filtered_queryset.exists():
             return Response(
                 {"error": "No oxygen level measurements found for analysis"},
                 status=status.HTTP_404_NOT_FOUND
             )
         
-        latest_spo2 = queryset.latest('timestamp')
-
-        lowest_reading = latest_spo2.get_lowest_reading(days=days)
-
+        min_value = filtered_queryset.aggregate(min_value=models.Min('value'))['min_value']
+        print(f"Minimum value: {min_value}")
+        
         return Response({
-            "lowest_oxygen_level": f'{lowest_reading}%',
-        })
+            "lowest_oxygen_level": f"{min_value}%"
+        }, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'])
     def alert_check(self):
