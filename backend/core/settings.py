@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'health_metrics.apps.HealthMetricsConfig',
     'django_filters',
     'django_celery_beat',
+    'data_simulation.apps.DataSimulationConfig',
 ]
 
 MIDDLEWARE = [
