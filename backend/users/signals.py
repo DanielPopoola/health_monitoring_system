@@ -6,4 +6,4 @@ from data_simulation.models import SimulationConfig
 @receiver(post_save, sender=UserProfile)
 def create_simulation_config(sender, instance, created, **kwargs):
     if created:
-        SimulationConfig.create_for_user(instance)
+        SimulationConfig.create_for_user(user_profile=instance)

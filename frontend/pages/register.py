@@ -7,8 +7,9 @@ def show_register_page():
     with st.form("register_form"):
         first_name = st.text_input("First Name")
         last_name = st.text_input("Last Name")
-        age = st.number_input("Age")
+        age = st.number_input("Age", step=1, format="%d")
         gender= st.text_input("Gender")
+        #name = st.text_input("Name")
         email = st.text_input("Email")
         password = st.text_input("Password", type="password")
         confirm_password = st.text_input("Confirm Password", type='password')

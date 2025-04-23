@@ -4,21 +4,22 @@ import streamlit as st
 API_BASE_URL = "http://localhost:8000/api"
 
 def register_user(email, password, first_name: str, last_name: str, name: str, age: int, gender: str):
-    response = requests.post(
-        f"{API_BASE_URL}/register/",
-        json={
-            "emai": email,
+    user_data ={
+            "email": email,
             "password": password,
             "first_name": first_name,
             "last_name": last_name,
             "name": name,
             "age":age,
-            "gender": gender
-        }
-    )
-    if response.status_code == 201:
-        return True, "Registration successful!"
-    return False, response.json().get("detail", "Registration failed")
+            "gender": gender}
+    print(user_data)
+    response = requests.post(
+        f"{API_BASE_URL}/register",json=user_data)
+    try:
+        if response.status_code == 201:
+            return True, "Registration successful!"
+    except requests.exceptions.JSONDecodeError:
+        return False, f"Invalid response: {response.status_code} - {response.text}"
 
 def login_user(email, password):
     response = requests.post(
