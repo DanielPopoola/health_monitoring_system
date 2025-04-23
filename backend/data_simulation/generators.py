@@ -145,7 +145,7 @@ class SpO2Generator(BaseGenerator):
         value =  max(70, min(100, round(value)))
 
         return SpO2.objects.create(
-            email=self.user_profile,
+            user=self.user_profile,
             value=value,
             measurement_method='OTHER',
             timestamp=self.now,
