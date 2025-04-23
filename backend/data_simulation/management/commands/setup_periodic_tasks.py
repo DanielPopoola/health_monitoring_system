@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from django_celery_beat.models import PeriodicTask, IntervalSchedule
+from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSchedule
 
 class Command(BaseCommand):
     help = 'Setup periodic tasks for data simulation'
@@ -21,9 +21,12 @@ class Command(BaseCommand):
             period=IntervalSchedule.SECONDS,
         )
 
-        daily_schedule, _ = IntervalSchedule.objects.get_or_create(
-            every=24,
-            period=IntervalSchedule.HOURS,
+        daily_schedule, _ = CrontabSchedule.objects.get_or_create(
+            minute='0',
+            hour='9',  # 9 AM
+            day_of_week='*',
+            day_of_month='*',
+            month_of_year='*',
         )
 
         # Create tasks
