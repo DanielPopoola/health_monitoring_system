@@ -21,4 +21,4 @@ def show_login_page():
                 else:
                     st.error(message)
 
-    st.markdown("Don't have an account? [Register here](/Register)")
+    st.markdown("Don't have an account? [Register here](/register)")

@@ -7,7 +7,6 @@ def show_register_page():
     with st.form("register_form"):
         first_name = st.text_input("First Name")
         last_name = st.text_input("Last Name")
-        name = st.text_input("Name")
         age = st.number_input("Age")
         gender= st.text_input("Gender")
         email = st.text_input("Email")
@@ -25,8 +24,8 @@ def show_register_page():
                 success, message = register_user(
                     first_name=first_name,
                     last_name=last_name,
-                    name=name,
                     age=age,
+                    name=f"{first_name} {last_name}",
                     gender=gender,
                     email=email,
                     password=password
