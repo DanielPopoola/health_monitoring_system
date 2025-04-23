@@ -30,7 +30,7 @@ def login_user(email, password):
         # Store tokens in session state
         st.session_state["access_token"] = token_data["access"]
         st.session_state["refresh_token"] = token_data["refresh"]
-        st.session_state["email"] = token_data["email"]
+        st.session_state["email"] = email
         st.session_state["is_authenticated"] = True
         return True, "Login successful!"
     return False, "Invalid username or password"
