@@ -49,7 +49,7 @@ class Command(BaseCommand):
         )
 
         PeriodicTask.objects.get_or_create(
-            interval=daily_schedule,
+            crontab=daily_schedule,
             name='Generate Daily Metrics',
             task='data_simulation.tasks.generate_daily_metrics_for_all_users',
         )
