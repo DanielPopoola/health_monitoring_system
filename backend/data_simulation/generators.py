@@ -1,5 +1,4 @@
 import numpy as np
-import datetime
 import random
 from datetime import timedelta, datetime, time
 from django.utils import timezone
@@ -38,7 +37,7 @@ class BloodPressureGenerator(BaseGenerator):
         pulse = max(40, min(100, pulse))
 
         return BloodPressure.objects.create(
-            user=self.user_profile.user,
+            user=self.user_profile,
             systolic=systolic,
             diastolic=diastolic,
             pulse=pulse,
@@ -65,7 +64,7 @@ class DailyStepsGenerator(BaseGenerator):
         distance = round(count / steps_per_km, 2) # km
 
         return DailySteps.objects.create(
-            user=self.user_profile.user,
+            user=self.user_profile,
             count=count,
             goal=goal,
             distance=distance,
@@ -94,7 +93,7 @@ class HeartRateGenerator(BaseGenerator):
             value *= 1.1
 
         return HeartRate.objects.create(
-            user=self.user_profile.user,
+            user=self.user_profile,
             value=max(40, min(180, round(value))),
             activity_level=activity_level,
             timestamp=self.now,
@@ -126,7 +125,7 @@ class SleepDurationGenerator(BaseGenerator):
         interruptions = random.randint(0, 3)
 
         return SleepDuration.objects.create(
-            user=self.user_profile.user,
+            user=self.user_profile,
             start_time=bedtime,
             end_time=end_time,
             timestamp=bedtime,
@@ -146,7 +145,7 @@ class SpO2Generator(BaseGenerator):
         value =  max(70, min(100, round(value)))
 
         return SpO2.objects.create(
-            user=self.user_profile.user,
+            email=self.user_profile,
             value=value,
             measurement_method='OTHER',
             timestamp=self.now,
