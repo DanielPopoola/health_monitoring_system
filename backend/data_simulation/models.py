@@ -23,5 +23,5 @@ class SimulationConfig(models.Model):
     # Auto-create config when a new user is created
     @classmethod
     def create_for_user(cls, user_profile):
-        return cls.objects.create(user=user_profile)
+        return cls.objects.create(user_profile=user_profile)
     
