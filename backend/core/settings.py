@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django_filters',
     'django_celery_beat',
     'data_simulation.apps.DataSimulationConfig',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [

@@ -17,7 +17,7 @@ def get_blood_pressure_data(days=1):
     start_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
 
     response = requests.get(
-        f"{API_BASE_URL}/health-metrics/blood-pressure/?start_date={start_date}",
+        f"{API_BASE_URL}/blood-pressure/?start_date={start_date}",
         headers=get_headers()
     )
 
@@ -34,7 +34,7 @@ def get_daily_steps_data(days=7):
     start_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
 
     response = requests.get(
-        f"{API_BASE_URL}/health-metrics/daily-steps/?start_date={start_date}",
+        f"{API_BASE_URL}/daily-steps/?start_date={start_date}",
         headers=get_headers()
     )
 
@@ -51,7 +51,7 @@ def get_heart_rate_data(days=1):
     start_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
 
     response = requests.get(
-        f"{API_BASE_URL}/health-metrics/heart-rate/?start_date={start_date}",
+        f"{API_BASE_URL}/heart-rate/?start_date={start_date}",
         headers=get_headers()
     )
 
@@ -68,7 +68,7 @@ def get_sleep_duration_data(days=7):
     start_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
 
     response = requests.get(
-        f"{API_BASE_URL}/health-metrics/sleep-duration/?start_date={start_date}",
+        f"{API_BASE_URL}/sleep-duration/?start_date={start_date}",
         headers=get_headers()
     )
 
@@ -85,7 +85,7 @@ def get_spo2_data(days=1):
     start_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
 
     response = requests.get(
-        f"{API_BASE_URL}/health-metrics/spo2/?start_date={start_date}",
+        f"{API_BASE_URL}/spo2/?start_date={start_date}",
         headers=get_headers()
     )
 
