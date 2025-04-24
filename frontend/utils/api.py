@@ -24,7 +24,7 @@ def get_blood_pressure_data(days=1):
     if response.status_code == 200:
         data = response.json()
         if data:
-            df = pd.DataFrame(data)
+            df = pd.DataFrame(data['results'])
             df['timestamp'] = pd.to_datetime(df['timestamp'])
             return df
     return pd.DataFrame()
@@ -41,7 +41,7 @@ def get_daily_steps_data(days=7):
     if response.status_code == 200:
         data = response.json()
         if data:
-            df = pd.DataFrame(data)
+            df = pd.DataFrame(data['results'])
             df['timestamp'] = pd.to_datetime(df['timestamp'])
             return df
     return pd.DataFrame()
@@ -58,7 +58,8 @@ def get_heart_rate_data(days=1):
     if response.status_code == 200:
         data = response.json()
         if data:
-            df = pd.DataFrame(data)
+            df = pd.DataFrame(data['results'])
+            #print("Raw API Response: ", data)
             df['timestamp'] = pd.to_datetime(df['timestamp'])
             return df
     return pd.DataFrame()
@@ -75,7 +76,7 @@ def get_sleep_duration_data(days=7):
     if response.status_code == 200:
         data = response.json()
         if data:
-            df = pd.DataFrame(data)
+            df = pd.DataFrame(data['results'])
             df['timestamp'] = pd.to_datetime(df['timestamp'])
             return df
     return pd.DataFrame()
@@ -92,7 +93,7 @@ def get_spo2_data(days=1):
     if response.status_code == 200:
         data = response.json()
         if data:
-            df = pd.DataFrame(data)
+            df = pd.DataFrame(data['results'])
             df['timestamp'] = pd.to_datetime(df['timestamp'])
             return df
     return pd.DataFrame()

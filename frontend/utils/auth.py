@@ -28,11 +28,23 @@ def login_user(email, password):
     )
     if response.status_code == 200:
         token_data = response.json()
+        access_token = token_data["access"]
+        refresh_token = token_data["refresh"]
         # Store tokens in session state
-        st.session_state["access_token"] = token_data["access"]
-        st.session_state["refresh_token"] = token_data["refresh"]
+        st.session_state["access_token"] = access_token
+        st.session_state["refresh_token"] = refresh_token
         st.session_state["email"] = email
         st.session_state["is_authenticated"] = True
+        
+        # Fetch user profile using access token
+        headers = {"Authorization": f"Bearer {access_token}"}
+        user_response = requests.get(f"{API_BASE_URL}/user/", headers=headers)
+        
+        if user_response.status_code == 200:
+            user_info = user_response.json().get("user", {})
+            st.session_state["first_name"] =    user_info.get("first_name", "")
+            st.session_state["last_name"] =    user_info.get("last_name", "")
+            st.session_state["name"] = user_info.get("name", "")
         return True, "Login successful!"
     return False, "Invalid username or password"
 
