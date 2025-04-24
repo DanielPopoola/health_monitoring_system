@@ -17,15 +17,20 @@ if "is_authenticated" not in st.session_state:
     st.session_state["is_authenticated"] = False
 
 with st.sidebar:
-    st.title("Health Monitoring")
+    show_sidebar = st.checkbox("Toggle Sidebar", value=True)
 
-    if st.session_state.get("is_authenticated", False):
-        st.write(f"Logged in as: {st.session_state.get('first_name', 'User')}")
-        if st.button("Logout"):
-            logout_user()
-            st.rerun()
-    else:
-        page = st.radio("Navigation", ["Login", "Register"])
+if show_sidebar:
+    with st.sidebar:
+        st.title("Health Monitoring")
+
+        if st.session_state.get("is_authenticated", False):
+            st.write(f"Logged in as: {st.session_state.get('first_name', 'User')}")
+            if st.button("Logout"):
+                logout_user()
+                st.rerun()
+        else:
+            page = st.radio("Navigation", ["Login", "Register"])
+
 
 if st.session_state.get("is_authenticated", False):
     show_dashboard()
