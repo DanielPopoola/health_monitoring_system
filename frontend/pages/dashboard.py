@@ -7,13 +7,17 @@ def show_dashboard():
     st.title(f"Welcome to your Health Dashboard, {st.session_state.get('first_name', 'User')}")
 
     time_period = st.selectbox(
-        "Select time period:",
+        "Select time period:", 
         ["Last 24 hours", "Last 7 days", "Last 30 days"],
         index=0
     )
-
-    days = {"Last 24 hours": 1, "Last 7 days": 7, "Last 30 days": 30}[time_period]
-
+    
+    days = 1
+    if time_period == "Last 7 days":
+        days = 7
+    elif time_period == "Last 30 days":
+        days = 30
+        
     # Get data
     heart_rate_df = get_heart_rate_data(days)
     blood_pressure_df = get_blood_pressure_data(days)
