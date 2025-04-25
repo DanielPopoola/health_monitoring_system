@@ -12,11 +12,7 @@ def show_dashboard():
         index=0
     )
     
-    days = 1
-    if time_period == "Last 7 days":
-        days = 7
-    elif time_period == "Last 30 days":
-        days = 30
+    days = {"Last 24 hours": 1, "Last 7 days": 7, "Last 30 days": 30}[time_period]
         
     # Get data
     heart_rate_df = get_heart_rate_data(days)
@@ -33,9 +29,10 @@ def show_dashboard():
 
     with col2:
         if not blood_pressure_df.empty:
-            avg_systolic = blood_pressure_df['systolic'].mean()
-            avg_diastolic = blood_pressure_df['diastolic'].mean()
-            st.metric("Average Blood Pressure", f"{avg_systolic:.0f}/{avg_diastolic:.0f} mmHg")
+            latest_reading = blood_pressure_df.iloc[-1]
+            latest_systolic = latest_reading['systolic']
+            latest_diastolic = latest_reading['diastolic']
+            st.metric("Current Blood Pressure", f"{latest_systolic}/{latest_diastolic} mmHg")
 
     with col3:
         if not spo2_df.empty:

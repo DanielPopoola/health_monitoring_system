@@ -42,6 +42,10 @@ def login_user(email, password):
             try:
                 user_info = user_response.json().get("user", {})
                 st.session_state["first_name"] = user_info.get("first_name", "")
+                st.session_state["last_name"] = user_info.get("last_name", "")
+                st.session_state["name"] = user_info.get("name", "")
+                st.session_state["age"] = user_info.get("age", 0)
+                st.session_state["gender"] = user_info.get("gender", "")
             except Exception as e:
                 st.error("Failed to parse user info")
                 st.write(user_response.text)
