@@ -1,11 +1,6 @@
 import streamlit as st
 from utils.api import get_heart_rate_data, get_blood_pressure_data, get_spo2_data
 from utils.visualizations import plot_heart_rate, plot_blood_pressure, plot_spo2_gauge
-from streamlit_autorefresh import st_autorefresh
-
-
-# Refresh every 5 seconds (60000 ms)
-st_autorefresh(interval=5000, key="dashboard_refresh")
 
 
 def show_dashboard():

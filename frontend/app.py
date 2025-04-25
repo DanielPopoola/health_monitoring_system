@@ -1,15 +1,15 @@
 import streamlit as st
-from pages.login import show_login_page
-from pages.register import show_register_page
-from pages.dashboard import show_dashboard
-from utils.auth import logout_user
 
-# Set page config
 st.set_page_config(
     page_title="Health Monitoring System",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+from pages.login import show_login_page
+from pages.register import show_register_page
+from pages.dashboard import show_dashboard
+from utils.auth import logout_user
 
 # Initialize session state
 if "is_authenticated" not in st.session_state:
@@ -24,6 +24,7 @@ if show_sidebar:
 
         if st.session_state.get("is_authenticated", False):
             st.write(f"Logged in as: {st.session_state.get('first_name', 'User')}")
+            show_dashboard()
             if st.button("Logout"):
                 logout_user()
                 st.rerun()
