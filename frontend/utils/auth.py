@@ -12,7 +12,6 @@ def register_user(email, password, first_name: str, last_name: str, name: str, a
             "name": name,
             "age":age,
             "gender": gender}
-    print(user_data)
     response = requests.post(
         f"{API_BASE_URL}/register",json=user_data)
     try:
@@ -35,16 +34,17 @@ def login_user(email, password):
         st.session_state["refresh_token"] = refresh_token
         st.session_state["email"] = email
         st.session_state["is_authenticated"] = True
-        
+
         # Fetch user profile using access token
-        headers = {"Authorization": f"Bearer {access_token}"}
-        user_response = requests.get(f"{API_BASE_URL}/user", headers=headers)
-        
+        user_response = requests.get(f"{API_BASE_URL}/user",cookies={"access_token":access_token})
+
         if user_response.status_code == 200:
-            user_info = user_response.json().get("user", {})
-            st.session_state["first_name"] =    user_info.get("first_name", "")
-            st.session_state["last_name"] =    user_info.get("last_name", "")
-            st.session_state["name"] = user_info.get("name", "")
+            try:
+                user_info = user_response.json().get("user", {})
+                st.session_state["first_name"] = user_info.get("first_name", "")
+            except Exception as e:
+                st.error("Failed to parse user info")
+                st.write(user_response.text)
         return True, "Login successful!"
     return False, "Invalid username or password"
 
