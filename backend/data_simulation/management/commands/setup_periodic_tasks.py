@@ -43,7 +43,7 @@ class Command(BaseCommand):
 
         daily_schedule, _ = CrontabSchedule.objects.get_or_create(
             minute='0',
-            hour='9',  # 9 AM
+            hour='9', 
             day_of_week='*',
             day_of_month='*',
             month_of_year='*',

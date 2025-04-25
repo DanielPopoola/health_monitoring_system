@@ -55,15 +55,20 @@ def show_blood_pressure_page():
         latest_reading = blood_pressure_df.iloc[-1]
         latest_systolic = latest_reading['systolic']
         latest_diastolic = latest_reading['diastolic']
+        st.metric("Latest Reading", f"{latest_systolic}/{latest_diastolic} mmHg")
+        
         category = get_bp_category(latest_systolic, latest_diastolic)
-        color = get_category_color(latest_systolic, latest_diastolic)
-
+        color = get_category_color(category)
+        
         st.metric(
             "Latest Reading",
-            f"{int(latest_systolic)/{int(latest_diastolic)}} mmHg",
+            f"{latest_systolic}/{latest_diastolic} mmHg",
             delta=None
         )
-        st.markdown(f"<p style='color:{color}; font-weight:bold;'>{category}</p>", unsafe_allow_html=True)
+        st.markdown(
+            f"<h3 style='color:{color}; font-weight:bold; font-size:28px; margin-top:10px;'>{category}</h3>",
+            unsafe_allow_html=True
+)
 
     with col2:
         avg_systolic = blood_pressure_df['systolic'].mean()
@@ -194,7 +199,7 @@ def run_time_of_day_analysis():
     col1, col2 = st.columns([4, 1])
 
     with col2:
-        days = st.select_box("Analysis period", [7, 14, 30, 60, 90], index=1)
+        days = st.selectbox("Analysis period", [1, 3, 7, 14, 30, 60, 90], index=1)
 
     with st.spinner("Analyzing time of day patterns"):
         response = requests.get(
@@ -296,7 +301,7 @@ def run_elevation_check():
     headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
     col1, col2 = st.columns([4, 1])
     with col2:
-        days = st.selectbox("Check period", [3, 7, 14, 30], index=1, key="elevation_days")
+        days = st.selectbox("Check period", [1,3, 7, 14, 30], index=1, key="elevation_days")
     
     with st.spinner("Checking blood pressure elevation..."):
         response = requests.get(

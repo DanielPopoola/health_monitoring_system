@@ -32,7 +32,7 @@ def show_dashboard():
             latest_reading = blood_pressure_df.iloc[-1]
             latest_systolic = latest_reading['systolic']
             latest_diastolic = latest_reading['diastolic']
-            st.metric("Current Blood Pressure", f"{latest_systolic}/{latest_diastolic} mmHg")
+            st.metric("Latest Reading", f"{latest_systolic}/{latest_diastolic} mmHg")
 
     with col3:
         if not spo2_df.empty:
