@@ -20,13 +20,24 @@ class Command(BaseCommand):
             period=IntervalSchedule.SECONDS,
         )
 
-        bp_schedule, _ = IntervalSchedule.objects.get_or_create(
-            every=300,
-            period=IntervalSchedule.SECONDS,
+        bp_morning, _ = CrontabSchedule.objects.get_or_create(
+            minute='0',
+            hour='6',
+            day_of_week='*',
+            day_of_month='*',
+            month_of_year='*'
+        )
+
+        bp_evening, _ = CrontabSchedule.objects.get_or_create(
+            minute='0',
+            hour='18',
+            day_of_week='*',
+            day_of_month='*',
+            month_of_year='*'
         )
 
         sp_schedule, _ = IntervalSchedule.objects.get_or_create(
-            every=60,
+            every=120,
             period=IntervalSchedule.SECONDS,
         )
 
@@ -46,8 +57,14 @@ class Command(BaseCommand):
         )
 
         PeriodicTask.objects.create(
-            interval=bp_schedule,
-            name='Generate Blood Pressure',
+            crontab=bp_morning,
+            name='Generate Blood Pressure (Morning)',
+            task='data_simulation.tasks.generate_blood_pressure_for_all_users'
+        )
+
+        PeriodicTask.objects.create(
+            crontab=bp_evening,
+            name='Generate Blood Pressure (Evening)',
             task='data_simulation.tasks.generate_blood_pressure_for_all_users'
         )
 
