@@ -24,9 +24,16 @@ class UserProfile(AbstractUser):
     name = models.CharField(max_length=55)
     email = models.EmailField(unique=True)
     username = None
-
     age = models.IntegerField(null=True, blank=True)
     gender = models.CharField(max_length=10, null=True, blank=True)
+
+    ROLE_CHOICES = (
+        ('patient', 'Patient'),
+        ('doctor', 'Doctor'),
+        ('nurse', 'Nurse'),
+    )
+
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='patient')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
