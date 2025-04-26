@@ -264,7 +264,7 @@ def run_hrv_analysis():
 def run_baseline_comparison():
     # Call the baseline comparison endpoint and display results
     API_BASE_URL = "http://localhost:8000/api"
-    headers = {"Authorization": f"Bearer {st.session_state['acces_token']}"}
+    headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
 
     col1, col2 = st.columns([3, 2])
     with col1:
@@ -282,7 +282,7 @@ def run_baseline_comparison():
 
     with st.spinner("Comparing to baseline..."):
         response = requests.get(
-            f"{API_BASE_URL}/heart-rate/baseline_comparsion/?baseline_days={baseline_days}&baseline_activity={activity_param}",
+            f"{API_BASE_URL}/heart-rate/baseline_comparison/?baseline_days={baseline_days}&baseline_activity={activity_param}",
             headers=headers
         )
 
@@ -292,7 +292,7 @@ def run_baseline_comparison():
             if "message" in data:
                 st.info(data["message"])
             else:
-                # Extract comparsion data
+                # Extract comparison data
                 current_hr = data.get('current', 0)
                 baseline_hr = data.get('baseline', 0)
                 percent_change = data.get('percent_change', 0)
@@ -330,7 +330,7 @@ def run_baseline_comparison():
 def run_resting_analysis():
     # Call the baseline comparison endpoint and display results
     API_BASE_URL = "http://localhost:8000/api"
-    headers = {"Authorization": f"Bearer {st.session_state['acces_token']}"}
+    headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
 
     with st.spinner("Calculating resting heart rate..."):
         response = requests.get(

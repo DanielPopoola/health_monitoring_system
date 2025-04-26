@@ -12,7 +12,7 @@ def get_headers():
     return {"Authorization": f"Bearer {st.session_state['access_token']}"}
 
 
-def get_blood_pressure_data(days=1):
+def get_blood_pressure_data(days=1) -> pd.DataFrame:
     """Get blood pressure data for the specified number of days"""
     start_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
 
@@ -29,7 +29,7 @@ def get_blood_pressure_data(days=1):
             return df
     return pd.DataFrame()
 
-def get_daily_steps_data(days=7):
+def get_daily_steps_data(days=7) -> pd.DataFrame:
     """Get daily data for the specified number of days"""
     start_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
 
@@ -46,7 +46,7 @@ def get_daily_steps_data(days=7):
             return df
     return pd.DataFrame()
 
-def get_heart_rate_data(days=1):
+def get_heart_rate_data(days=1) -> pd.DataFrame:
     """Get heart rate data for the specified number of days"""
     start_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
 
@@ -64,7 +64,7 @@ def get_heart_rate_data(days=1):
             return df
     return pd.DataFrame()
 
-def get_sleep_duration_data(days=7):
+def get_sleep_duration_data(days=7) -> pd.DataFrame:
     """Get sleep duration data for the specified number of days"""
     start_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
 
@@ -81,7 +81,7 @@ def get_sleep_duration_data(days=7):
             return df
     return pd.DataFrame()
 
-def get_spo2_data(days=1):
+def get_spo2_data(days=1) -> pd.DataFrame:
     """Get spo2 data for the specified number of days"""
     start_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
 

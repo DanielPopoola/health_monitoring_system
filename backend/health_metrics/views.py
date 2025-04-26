@@ -286,7 +286,7 @@ class DailyStepsViewSet(BaseHealthMetricsViewSet):
     search_fields = ['source', 'device']
 
     @action(detail=False, methods=['get'])
-    def weekly_average(self):
+    def weekly_average(self, request):
         """
         Get average number of steps per day over the past week.
 
@@ -345,13 +345,13 @@ class HeartRateViewSet(BaseHealthMetricsViewSet):
     search_fields = ['source', 'activity_level']
 
     @action(detail=False, methods=['get'])
-    def resting_average(self):
+    def resting_average(self, request):
         """
         Returns the average heart rate at resting level.
         """
         queryset = self.get_queryset()
 
-        if queryset.exists():
+        if not queryset.exists():
             return Response(
                 {"error": "No heart rate data found"},
                 status=status.HTTP_404_NOT_FOUND
@@ -372,7 +372,7 @@ class HeartRateViewSet(BaseHealthMetricsViewSet):
         """
         try:
             time_window = int(request.query_params.get('time_window', 24))
-            if time_window <= 0 or time_window >= 24:
+            if time_window <= 0 or time_window > 24:
                 return Response(
                     {"error": "Time window must be within 24hrs"},
                     status=status.HTTP_400_BAD_REQUEST
@@ -672,7 +672,7 @@ class SpO2ViewSet(BaseHealthMetricsViewSet):
         """Endpoint for alert_required function in SpO2 class"""
         queryset = self.get_queryset()
 
-        if queryset.exists():
+        if not queryset.exists():
             return Response(
                 {"error": "No oxygen level data found"},
                 status=status.HTTP_404_NOT_FOUND
