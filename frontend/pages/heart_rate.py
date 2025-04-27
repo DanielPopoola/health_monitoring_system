@@ -12,18 +12,31 @@ import time
 refresh_interval = 10 * 1000
 st_autorefresh(interval=refresh_interval, key="hr_autorefresh")
 
+ALLOWED_ROLES = ['DOCTOR', 'NURSE', 'ADMIN']
+
+@st.cache_data(ttl=60) # Cache for 60 seconds
+def cached_get_heart_rate_data(user_identifier, days):
+    #user_idenitifier helps ensure data is cached per user if tokens change often or 
+    # showing data for multiple users
+    print(f"CACHE MISS: Calling API for get_heart_data(days={days}) for user {user_identifier}")
+    return get_heart_rate_data(days)
 
 def show_heart_rate_page():
+    current_role = st.session_state.get("role", "USER")
+    if current_role not in ALLOWED_ROLES:
+        st.error("🚫 Access Denied: You do not have permission to view this page.")
+        st.stop()
+
     st.title("Heart Rate Monitoring")
 
     if "first_name" in st.session_state and st.session_state["first_name"]:
-        st.subheader(f"Hell, {st.session_state["first_name"]}")
+        st.subheader(f"Hello, {st.session_state["first_name"]}")
 
     col1, col2 = st.columns([3, 1])
     with col1:
         time_period = st.selectbox(
             "Select time period:",
-            ["Last 24 hours", "Last 7 days", "Last 30 days", "Custom range"]
+            ["Last 24 hours", "Last 3 days", "Last 7 days", "Last 30 days", "Custom range"]
         )
 
     with col2:
@@ -33,22 +46,27 @@ def show_heart_rate_page():
         col1, col2 = st.columns(2)
         with col1:
             start_date = st.date_input("Start date:", datetime.datetime.now() - datetime.timedelta(days=7))
-        with col2:
+        with col2:  
             end_date = st.date_input("End date:", datetime.datetime.now())
         days = (end_date - start_date) + 1
     else:
-        days = {"Last 24 hours": 1, "Last 7 days": 7, "Last 30 days": 30}[time_period]
+        days = {"Last 24 hours": 1, "Last 3 days": 3,"Last 7 days": 7, "Last 30 days": 30}[time_period]
+
+    # Check if user is authenticated before calling
+    if "email" in st.session_state:
+        user_id_for_cache = st.session_state["email"]
+        with st.spinner("Fetching heart rate data..."):
+            heart_rate_df = cached_get_heart_rate_data(user_id_for_cache, days)
 
     if refresh_button:
         with st.spinner("Refreshing data..."):
-            time.sleep(0.5)
-
-    heart_rate_df = get_heart_rate_data(days)
+            # Clear the cache for this specific function call if refresh is pressed
+            cached_get_heart_rate_data.clear()
+            st.rerun()
 
     if heart_rate_df.empty:
         st.warning("No heart rate data available for the selected period. Please check your connection or try another time range.")
         st.stop()
-
 
     st.subheader("Heart Rate Summary")
 
@@ -89,7 +107,8 @@ def show_heart_rate_page():
 
     if 'activity_level' in heart_rate_df.columns:
         activity_levels = sorted(heart_rate_df['activity_level'].unique())
-        if len(activity_levels)  > 1:
+        #print(activity_levels)
+        if len(activity_levels) > 1:
             selected_activity = st.multiselect(
                 "Filter by activity level",
                 options=activity_levels,
@@ -98,6 +117,7 @@ def show_heart_rate_page():
 
             if selected_activity:
                 filtered_df = heart_rate_df[heart_rate_df['activity_level'].isin(selected_activity)]
+                #print(filtered_df.head())
                 st.subheader("Heart Rate by Activity Level")
                 plot_heart_rate_by_activity(filtered_df)
 
@@ -214,7 +234,7 @@ def plot_heart_rate_by_activity(df: pd.DataFrame):
 
     fig.update_layout(
         height=400,
-        show_legend=False
+        showlegend=False
     )
 
     st.plotly_chart(fig, use_container_width=True)
@@ -273,7 +293,7 @@ def run_baseline_comparison():
     with col2:
         baseline_activity =  st.selectbox(
             "Activity level filter",
-            ["all", "sleeping", "resting", "active"],
+            ["sleeping", "resting", "active"],
             index=0
         )
     
@@ -385,6 +405,9 @@ def create_hr_gauge(value):
             }
         }
     ))
+
+    return fig
+    
 
 def get_hr_status(value):
     if value < 60:

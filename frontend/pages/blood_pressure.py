@@ -12,14 +12,21 @@ import time
 refresh_interval = 5 * 1000  # milliseconds
 st_autorefresh(interval=refresh_interval, key="bp_autorefresh")
 
+ALLOWED_ROLES = ['DOCTOR', 'NURSE', 'ADMIN']
+
 def show_blood_pressure_page():
+    current_role = st.session_state.get("role", "USER")
+    if current_role not in ALLOWED_ROLES:
+        st.error("🚫 Access Denied: You do not have permission to view this page.")
+        st.stop()
+
     st.title("Blood Pressure Monitoring")
 
     col1, col2 = st.columns([3, 1])
     with col1:
         time_period = st.selectbox(
             "Select time period:",
-            ["Last 24 hours", "Last 7 days", "Last 30 days", "Custom range"]
+            ["Last 24 hours", "Last 3 days","Last 7 days", "Last 30 days", "Custom range"]
         )
 
     with col2:
@@ -34,7 +41,7 @@ def show_blood_pressure_page():
             end_date = st.date_input("End date", datetime.datetime.now())
         days = (end_date - start_date) + 1
     else:
-        days = {"Last 24 hours": 1, "Last 7 days": 7, "Last 30 days": 30}[time_period]
+        days = {"Last 24 hours": 1, "Last 3 days": 3,"Last 7 days": 7, "Last 30 days": 30}[time_period]
 
     if refresh_button:
         with st.spinner("Refreshing data..."):
