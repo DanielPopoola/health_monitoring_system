@@ -6,13 +6,15 @@ from .models import UserProfile
 @admin.register(UserProfile)
 class CustomUserAdmin(UserAdmin):
     model = UserProfile
-    list_display = ('email', 'first_name', 'last_name', 'is_staff', 'is_superuser')
-    search_fields = ('email', 'first_name', 'last_name')
+    list_display = ('email', 'first_name', 'last_name', 'role', 'is_staff', 'is_superuser')
+    list_filter = ('role', 'is_staff', 'is_superuser', 'is_active', 'groups')
+    search_fields = ('email', 'first_name', 'last_name', 'name')
     ordering = ('email', )
 
     fieldsets = (
         (None, {'fields':('email', 'password')}),
         ('Personal info', {'fields': ('name', 'first_name', 'last_name', 'age', 'gender')}),
+        ('Role', {'fields': ('role',)}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
@@ -20,8 +22,14 @@ class CustomUserAdmin(UserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2', 'is_staff', 'is_superuser'),
+            'fields': (
+                'email', 'password', 'password2',
+                'first_name', 'last_name', 'name', 'age', 'gender',
+                'role',
+                'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'
+                ),
         }),
     )
+
 
     filter_horizontal = ('groups', 'user_permissions')
