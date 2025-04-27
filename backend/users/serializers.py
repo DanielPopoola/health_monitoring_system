@@ -1,13 +1,17 @@
 from rest_framework import serializers
-from .models import UserProfile
+from .models import UserProfile, Role
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class UserSerializer(serializers.ModelSerializer):
+    role_display = serializers.CharField(source='get_role_display', read_only=True)
+
     class Meta:
         model = UserProfile
-        fields = ['id', 'first_name', 'last_name', 'name', 'age', 'gender', 'email', 'password', 'role']
+        fields = ['id', 'first_name', 'last_name', 'name', 'age', 'gender',
+                   'email', 'password', 'role', 'role_display']
         extra_kwargs = {
-            'password': {'write_only': True}  # Ensures password is never sent in responses
+            'password': {'write_only': True}, # Ensures password is never sent in responses
+            'role': {'read_only': True} # Prevent self-modification of role
         }
 
     def create(self, validated_data):

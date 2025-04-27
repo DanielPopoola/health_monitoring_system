@@ -19,6 +19,11 @@ class UserProfileManager(BaseUserManager):
 
         return self.create_user(email, password, **extra_fields)
 
+class Role(models.TextChoices):
+    USER = 'USER', 'User'
+    DOCTOR = 'DOCTOR', 'Doctor'
+    NURSE = 'NURSE', 'Nurse'
+    ADMIN = 'ADMIN', 'Admin'
 
 class UserProfile(AbstractUser):
     name = models.CharField(max_length=55)
@@ -26,14 +31,9 @@ class UserProfile(AbstractUser):
     username = None
     age = models.IntegerField(null=True, blank=True)
     gender = models.CharField(max_length=10, null=True, blank=True)
+    role = models.CharField(max_length=10, choices=Role.choices, 
+                            default=Role.USER, help_text="User role in the system")
 
-    ROLE_CHOICES = (
-        ('patient', 'Patient'),
-        ('doctor', 'Doctor'),
-        ('nurse', 'Nurse'),
-    )
-
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='patient')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -41,4 +41,16 @@ class UserProfile(AbstractUser):
     objects = UserProfileManager()
 
     def __str__(self):
-        return self.email
+        return f"{self.email} ({self.get_role_display()})"
+    
+    @property
+    def is_healthcare_professional(self):
+        return self.role in [Role.DOCTOR, Role.NURSE]
+    
+    @property
+    def is_regular_user(self):
+        return self.role == Role.USER
+
+
+
+

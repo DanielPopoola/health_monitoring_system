@@ -7,7 +7,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.exceptions import InvalidToken, AuthenticationFailed
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -68,42 +68,19 @@ class Login(APIView):
         serializer = UserSerializer(user)
         response = Response({
             'message': 'Login successful',
-            'user': serializer.data
+            'user': serializer.data,
+            'access_token': access_token,
+            'refresh_token': refresh_token
         }, status=status.HTTP_200_OK)
-
-        response.set_cookie(
-            key='access_token',
-            value=access_token,
-            httponly=True,
-            secure=False,
-            samesite='Lax',
-            max_age=3600
-        )
 
         return response
 
 
 class UserView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
-        token = request.COOKIES.get('access_token')
-
-        if not token:
-            return Response(
-                {'error': 'Token not found!'},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-
-        try:
-            jwt_authenticator = JWTAuthentication()
-            validated_token = jwt_authenticator.get_validated_token(token)
-            user = jwt_authenticator.get_user(validated_token=validated_token)
-        except(InvalidToken, AuthenticationFailed):
-            return Response(
-                {'error': 'Invalid or expired token!'},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-
-        serializer = UserSerializer(user)
+        serializer = UserSerializer(request.user)
         return Response({'user': serializer.data}, status=status.HTTP_200_OK)
 
 
