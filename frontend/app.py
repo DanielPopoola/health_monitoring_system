@@ -1,55 +1,68 @@
 import streamlit as st
-from pages.login import show_login_page
-from pages.register import show_register_page
-from pages.dashboard import show_dashboard
-from pages.blood_pressure import show_blood_pressure_page
+
+st.set_page_config(page_title="Health Monitoring System",
+                       layout="wide", initial_sidebar_state="auto")
+    
 from utils.auth import logout_user
+from pages import register, login, dashboard, blood_pressure, heart_rate, daily_steps, sleep_duration, spo2
 
-# Set page config
-st.set_page_config(
-    page_title="Health Monitoring System",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+ROLE_USER = 'USER'
+ROLE_DOCTOR = 'DOCTOR'
+ROLE_NURSE = 'NURSE'
+ROLE_ADMIN = 'ADMIN'
 
-# Initialize session state
-if "is_authenticated" not in st.session_state:
-    st.session_state["is_authenticated"] = False
+USER_PAGES = {
+    "Dashboard": dashboard.show_dashboard,
+    "Daily Steps": daily_steps,
+    "Sleep Duration": sleep_duration,
+    "SpO2": spo2,
+    "Register": register.show_register_page,
+}
 
-# Set a default for the page
-if "page" not in st.session_state:
-    st.session_state["page"] = "Login"
+PROFESSIONAL_PAGES = {
+    **USER_PAGES,
+    "Heart Rate": heart_rate.show_heart_rate_page,
+    "Blood Pressure": blood_pressure.show_blood_pressure_page,
+}
 
-# Sidebar toggle
-with st.sidebar:
-    show_sidebar = st.checkbox("Toggle Sidebar", value=True)
+ADMIN_PAGES = {
+    **PROFESSIONAL_PAGES
+}
 
-if show_sidebar:
-    with st.sidebar:
-        st.title("Health Monitoring")
+def main():
+    if "is_authenticated" not in st.session_state:
+        st.session_state.is_authenticated = False
+        st.session_state.role = ROLE_USER
 
-        if st.session_state.get("is_authenticated", False):
-            st.write(f"Logged in as: {st.session_state.get('first_name', 'User')}")
-            selected_page = st.radio("Navigation", ["Dashboard", "Blood Pressure", "Logout"])
+    if not st.session_state.is_authenticated:
+        login.show_login_page()
+    else:
+        role = st.session_state.get("role", ROLE_USER)
+        user_name = st.session_state.get("first_name", "User")
+        role_display = st.session_state.get("role_display", "User")
 
-            if selected_page == "Logout":
-                logout_user()
-                st.session_state["page"] = "Login"
-                st.rerun()
-            else:
-                st.session_state["page"] = selected_page
+        st.sidebar.success(f"Logged in as {user_name} ({role_display})")
 
+        # Determine accessible pages
+        if role == ROLE_USER:
+            available_pages = USER_PAGES
+        elif role in [ROLE_DOCTOR, ROLE_NURSE]:
+            available_pages = PROFESSIONAL_PAGES
+        elif role == ROLE_ADMIN:
+            available_pages = ADMIN_PAGES
         else:
-            selected_page = st.radio("Navigation", ["Login", "Register", "Blood Pressure"])
-            st.session_state["page"] = selected_page
+            available_pages  = USER_PAGES
 
-# Render the appropriate page
-if st.session_state["page"] == "Dashboard" and st.session_state.get("is_authenticated", False):
-    show_dashboard()
-elif st.session_state["page"] == "Blood Pressure" and st.session_state.get("is_authenticated", False):
-    show_blood_pressure_page()
-elif st.session_state["page"] == "Login":
-    show_login_page()
-elif st.session_state["page"] == "Register":
-    show_register_page()
+        st.sidebar.title("Navigation")
+        selection = st.sidebar.radio("Go to", list(available_pages.keys()))
 
+        # Render selected pages
+        page_function = available_pages[selection]
+        page_function()
+
+        if st.sidebar.button("Logout"):
+            logout_user()
+            st.rerun()
+
+if __name__ == "__main__":
+    main()
