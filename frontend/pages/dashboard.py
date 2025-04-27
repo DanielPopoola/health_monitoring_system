@@ -8,16 +8,34 @@ def show_dashboard():
 
     time_period = st.selectbox(
         "Select time period:", 
-        ["Last 24 hours", "Last 7 days", "Last 30 days"],
+        ["Last 1 hour", "Last 6 hours", "Last 12 hours","Last 24 hours", "Last 7 days", "Last 30 days"],
         index=0
     )
     
-    days = {"Last 24 hours": 1, "Last 7 days": 7, "Last 30 days": 30}[time_period]
+    if time_period == "Last 1 hour":
+        hr_days, hr_hours = 0, 1
+        other_days = 1
+    elif time_period == "Last 6 hours":
+        hr_days, hr_hours = 0, 6
+        other_days = 1
+    elif time_period == "Last 12 hours":
+        hr_days, hr_hours = 0, 12
+        other_days = 1
+    elif time_period == "Last 24 hours":
+        hr_days, hr_hours = 0, 24
+        other_days = 1
+    elif time_period == "Last 7 days":
+        hr_days, hr_hours = 7, 0
+        other_days = 7
+    else:  # Last 30 days
+        hr_days, hr_hours = 30, 0
+        other_days = 30
+    
         
     # Get data
-    heart_rate_df = get_heart_rate_data(days)
-    blood_pressure_df = get_blood_pressure_data(days)
-    spo2_df =  get_spo2_data(days)
+    heart_rate_df = get_heart_rate_data(days=hr_days, hours=hr_hours)
+    blood_pressure_df = get_blood_pressure_data(other_days)
+    spo2_df =  get_spo2_data(other_days)
 
     # Display top metrics
     col1, col2, col3 = st.columns(3)

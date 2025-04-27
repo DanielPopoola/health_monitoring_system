@@ -8,7 +8,7 @@ import time
 from functools import wraps
 from typing import Optional, List, Dict, Any
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s -%(levelname)s -%(messages)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 API_BASE_URL = "http://localhost:8000/api"
 
@@ -131,20 +131,24 @@ def _fetch_paginated_data(endpoint_url:str, page: int, page_size:int, headers: D
         raise
 
 @paginated_dataframe(page_size=100)
-def _get_heart_rate_pages(*, page: int, page_size: int, headers: Dict, start_date: str):
+def _get_heart_rate_pages(*, page: int, page_size: int, headers: Dict, start_datetime: str):
     """Fetches a single page of heart rate data."""
     url = f"{API_BASE_URL}/heart-rate/"
-    params = {'start_date': start_date}
+    params = {'start_date': start_datetime}
     return _fetch_paginated_data(url, page, page_size, headers, params)
 
-def get_heart_rate_data(days: int = 1) -> pd.DataFrame:
-    """Get ALL heart rate data, using the paginated fetcher."""
-    start_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
+def get_heart_rate_data(days: int = 1, hours: int = 0) -> pd.DataFrame:
+    """
+    Fetch heart rate data starting from now minus the specified days and hours.
+    You can use days=0 and hours=1 to fetch just the last hour of data.
+    """
+    start_dt_obj = datetime.now() - timedelta(days=days, hours=hours)
+    start_datetime_iso = start_dt_obj.strftime('%Y-%m-%dT%H:%M:%S')
     headers = get_headers()
     all_results = []
 
     # The decorated function returns a generator
-    page_generator = _get_heart_rate_pages(headers=headers, start_date=start_date)
+    page_generator = _get_heart_rate_pages(headers=headers, start_datetime=start_datetime_iso)
 
     try:
         for page_data in page_generator:
@@ -153,6 +157,10 @@ def get_heart_rate_data(days: int = 1) -> pd.DataFrame:
     except RuntimeError as e:
         st.error(f"Failed to fetch complete heart rate data: {e}")
         logging.error(f"RuntimeError during heart rate pagination: {e}")
+        return pd.DataFrame()
+    except requests.exceptions.HTTPError as e:
+        st.error(f"API Error fetching heart rate data: {e.response.status_code}")
+        logging.error(f"HTTPError during heart rate pagination: {e}")
         return pd.DataFrame()
     
     if all_results:
