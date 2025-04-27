@@ -36,7 +36,8 @@ def login_user(email, password):
         st.session_state["is_authenticated"] = True
 
         # Fetch user profile using access token
-        user_response = requests.get(f"{API_BASE_URL}/user",cookies={"access_token":access_token})
+        headers = {"Authorization": f"Bearer {access_token}"}
+        user_response = requests.get(f"{API_BASE_URL}/user", headers=headers)
 
         if user_response.status_code == 200:
             try:
@@ -44,15 +45,22 @@ def login_user(email, password):
                 st.session_state["first_name"] = user_info.get("first_name", "")
                 st.session_state["last_name"] = user_info.get("last_name", "")
                 st.session_state["name"] = user_info.get("name", "")
+                st.session_state["email"] = user_info.get("email")
                 st.session_state["age"] = user_info.get("age", 0)
                 st.session_state["gender"] = user_info.get("gender", "")
+                st.session_state["role"] = user_info.get("role", "USER")
+                st.session_state["role_display"] = user_info.get("role_display", "User")
             except Exception as e:
                 st.error("Failed to parse user info")
                 st.write(user_response.text)
+        else:
+            st.warning(f"Login succeeded but failed to fetch user profile (Error {user_response.status_code}). Limited access.")
+            st.session_state["role"] = "USER"
+            st.session_state["role_display"] = "User"
         return True, "Login successful!"
     return False, "Invalid username or password"
 
 def logout_user():
-    for key in ["access_token", "refresh_token", "email", "is_authenticated"]:
+    for key in ["access_token", "refresh_token", "email", "is_authenticated", "role", "role_display"]:
         if key in st.session_state:
             del st.session_state[key]
