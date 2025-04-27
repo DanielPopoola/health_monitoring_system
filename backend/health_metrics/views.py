@@ -1,10 +1,12 @@
 from rest_framework import viewsets, filters, permissions, status
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models.functions import TruncHour, TruncDay
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
 from django.db import models
+from django.db.models import Avg, Min, Max
 from datetime import timedelta  
 from .models import BloodPressure, DailySteps, HeartRate, SleepDuration, SpO2
 from .serializers  import (
@@ -24,7 +26,7 @@ from .filters import(
 # Create your views here.
 class StandardResultsPagination(PageNumberPagination):
     """Standard pagination for all viewsets"""
-    page_size = 20
+    page_size = 100
     page_size_query_param = 'page_size'
     max_page_size = 100
 

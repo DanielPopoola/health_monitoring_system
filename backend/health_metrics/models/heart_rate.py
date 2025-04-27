@@ -50,7 +50,7 @@ class HeartRate(HealthMetric):
         return self.value < 60
     
     def get_resting_average(self):
-        return HeartRate.objects.filter(user=self.user, activity_level='resting').aaggregate(avg=Avg('value'))['avg']
+        return HeartRate.objects.filter(user=self.user, activity_level='resting').aggregate(avg=Avg('value'))['avg']
     
     def calculate_hrv(self, time_window=24):
         """

@@ -7,8 +7,8 @@ from .models import BloodPressure, DailySteps, HeartRate, SleepDuration, SpO2
 class DateRangeFilterSet(django_filters.FilterSet):
     """Filter set that adds date filtering capabilities"""
     # Allows filtering by date range
-    start_date = django_filters.DateFilter(field_name='timestamp', lookup_expr='gte')
-    end_date = django_filters.DateFilter(field_name='timestamp', lookup_expr='lte')
+    start_date = django_filters.DateTimeFilter(field_name='timestamp', lookup_expr='gte')
+    end_date = django_filters.DateTimeFilter(field_name='timestamp', lookup_expr='lte')
 
     # Allows filtering by last X days
     last_days = django_filters.NumberFilter(method='filter_last_days')
@@ -48,7 +48,7 @@ class HeartRateFilterSet(DateRangeFilterSet):
 
     class Meta:
         model = HeartRate
-        fields = ['source', 'timestamp', 'activity_level','value']
+        fields = ['source', 'timestamp', 'activity_level', 'value']
 
 class SleepDurationFilterSet(DateRangeFilterSet):
     duration_min = django_filters.NumberFilter(method='filter_duration_min')
