@@ -1,104 +1,220 @@
 import streamlit as st
-from utils.api import get_heart_rate_data
+from utils.api import get_heart_rate_data 
 import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
 import requests
 from streamlit_autorefresh import st_autorefresh
-import datetime
+from datetime import datetime, timedelta, timezone
+import logging
 import time
+
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 refresh_interval = 10 * 1000
 st_autorefresh(interval=refresh_interval, key="hr_autorefresh")
-
 ALLOWED_ROLES = ['DOCTOR', 'NURSE', 'ADMIN']
 
-@st.cache_data(ttl=60) # Cache for 60 seconds
-def cached_get_heart_rate_data(user_identifier, days):
-    #user_idenitifier helps ensure data is cached per user if tokens change often or 
-    # showing data for multiple users
-    print(f"CACHE MISS: Calling API for get_heart_data(days={days}) for user {user_identifier}")
-    return get_heart_rate_data(days)
+@st.cache_data(ttl=60)
+def cached_get_heart_rate_data(user_identifier: str, fetch_days: int, fetch_hours: int, user_id: int | None = None) -> pd.DataFrame:
+    """
+    Fetches heart rate data from the API, cached based on user and fetch range.
+    Args:
+        user_identifier: A unique string identifying the cache entry (e.g., email or user_id).
+        fetch_days: Number of days back to request data for (initial fetch).
+        fetch_hours: Number of hours back to request data for (initial fetch).
+        user_id: Optional ID of the patient being viewed.
+    Returns:
+        Pandas DataFrame with heart rate data.
+    """
+    print(f"CACHE MISS: Calling API get_heart_rate_data(days={fetch_days}, hours={fetch_hours}) for user {user_identifier}")
+    return get_heart_rate_data(days=fetch_days, hours=fetch_hours, user_id=user_id)
 
-def show_heart_rate_page():
+def show_heat_rate_page(user_id=None):
+    """Displays the Heart Rate Monitoring page"""
     current_role = st.session_state.get("role", "USER")
     if current_role not in ALLOWED_ROLES:
-        st.error("🚫 Access Denied: You do not have permission to view this page.")
-        st.stop()
+        if not user_id and current_role == 'USER':
+            pass
+        elif user_id:
+            st.error("🚫 Access Denied: You do not have permission to view patient data.")
+            st.stop()
 
-    st.title("Heart Rate Monitoring")
+    page_title = "Heart Rate Monitoring"
+    user_identifier_for_cache = st.session_state.get("email", "guest")
 
-    if "first_name" in st.session_state and st.session_state["first_name"]:
+    if user_id:
+        page_title = f"Patient Heart Rate (ID: {user_id})"
+        st.info(f"Viewing Heart Rate data for selected user (ID: {user_id})")
+        user_identifier_for_cache = f"user_{user_id}"
+    elif "first_name" in st.session_state and st.session_state["first_name"]:
         st.subheader(f"Hello, {st.session_state["first_name"]}")
+
+    st.title(page_title)
 
     col1, col2 = st.columns([3, 1])
     with col1:
-        time_period = st.selectbox(
+        time_period = [
+                "Last hour", "Last 6 hours", "Last 12 hours", # Hourly options
+                "Last 24 hours", "Last 3 days", "Last 7 days", # Daily options
+                "Last 30 days", "Custom range"
+            ]
+        selected_period = st.selectbox(
             "Select time period:",
-            ["Last 24 hours", "Last 3 days", "Last 7 days", "Last 30 days", "Custom range"]
+            options=time_period,
+            index=3, # Default to "  Last 24 hours",
+            key=f"hr_time_period_{user_identifier_for_cache}"
         )
 
     with col2:
-        refresh_button = st.button("Refresh Data")
+        refresh_button = st.button("Refresh Data", key=f"hr_refresh_{user_identifier_for_cache}")
 
-    if time_period == "Custom range":
-        col1, col2 = st.columns(2)
-        with col1:
-            start_date = st.date_input("Start date:", datetime.datetime.now() - datetime.timedelta(days=7))
-        with col2:  
-            end_date = st.date_input("End date:", datetime.datetime.now())
-        days = (end_date - start_date) + 1
+    now_aware = datetime.now(timezone.utc)
+    end_dt_for_filter = now_aware # Default end time is now
+
+    fetch_days = 1
+    fetch_hours = 0
+
+    if selected_period == "Custom range":
+        col1date, col2date = st.columns(2)
+        with col1date:
+            start_date = st.date_input(
+                "Start date ",
+                now_aware.date(),
+                key=f"hr_start_date_{user_identifier_for_cache}"
+            )
+            start_time = st.time_input(
+                "Start time",
+                now_aware.time().replace(second=0, microsecond=0),
+                key=f"hr_start_time_{user_identifier_for_cache}"
+            )
+        with col2date:
+            end_date = st.date_input(
+                "End date",
+                now_aware.date(),
+                key=f"hr_end_date_{user_identifier_for_cache}"
+            )
+            end_time = st.time_input(
+                "End time",
+                now_aware.time().replace(second=0, microsecond=0),
+                key=f"hr_end_time_{user_identifier_for_cache}"
+            )
+
+        try:
+            start_dt_for_filter  = datetime.combine(start_date, start_time).replace(tzinfo=timezone.utc)
+            end_dt_for_filter = datetime.combine(end_date, end_time).replace(tzinfo=timezone.utc)
+        except Exception as e:
+            st.error(f"Invalid datetime input: {e}")
+            logging.exception("Exception during datetime operation")
+            st.stop()
+
+        fetch_delta = end_dt_for_filter - start_dt_for_filter
+        fetch_days = fetch_delta.days  + (1 if fetch_delta.seconds > 0 or fetch_delta.microseconds > 0 else 0)
+        fetch_hours  = 0
+        time_description = f"Custom: {start_dt_for_filter.strftime('%Y-%m-%d %H:%M')} to {end_dt_for_filter.strftime('%Y-%m-%d %H:%M')}"
     else:
-        days = {"Last 24 hours": 1, "Last 3 days": 3,"Last 7 days": 7, "Last 30 days": 30}[time_period]
+        period_deltas = {
+        "Last hour": timedelta(hours=1),
+        "Last 6 hours": timedelta(hours=6),
+        "Last 12 hours": timedelta(hours=12),
+        "Last 24 hours": timedelta(days=1),
+        "Last 3 days": timedelta(days=3),
+        "Last 7 days": timedelta(days=7),
+        "Last 30 days": timedelta(days=30)
+        }
+        time_delta = period_deltas.get(selected_period, timedelta(days=1))
+        start_dt_for_filter = now_aware - time_delta
+        time_description = selected_period
 
-    # Check if user is authenticated before calling
-    if "email" in st.session_state:
-        user_id_for_cache = st.session_state["email"]
-        with st.spinner("Fetching heart rate data..."):
-            heart_rate_df = cached_get_heart_rate_data(user_id_for_cache, days)
+        fetch_days = time_delta.days
+        fetch_hours = time_delta.seconds // 3600
+
+        if fetch_days == 0 and fetch_hours > 0:
+             fetch_days = 1 
+             fetch_hours = 0
 
     if refresh_button:
         with st.spinner("Refreshing data..."):
-            # Clear the cache for this specific function call if refresh is pressed
             cached_get_heart_rate_data.clear()
             st.rerun()
+
+    heart_rate_df_raw = pd.DataFrame()
+
+    is_authenticated = "access_token" in st.session_state and st.session_state["access_token"]
+    can_fetch = is_authenticated or user_id
+    
+    if can_fetch:
+        with st.spinner(f"Fetching heart rate data ({time_description})..."):
+            try:
+                heart_rate_df_raw = cached_get_heart_rate_data(user_identifier=user_identifier_for_cache,
+                                                           fetch_days=fetch_days,
+                                                           fetch_hours=fetch_hours,
+                                                           user_id=user_id)
+            except Exception as e:
+                st.error(f"Error fetching heart rate data: {e}")
+                logging.exception("Exception during cached_get_heart_rate_data call")
+                heart_rate_df_raw = pd.DataFrame()
+
+    # Perform precise client-side filtering AFTER fetching/retrieving from cache
+    if not heart_rate_df_raw.empty:
+        if not pd.api.types.is_datetime64_any_dtype(heart_rate_df_raw['timestamp']):
+            st.warning("Timestamp column is not in datetime format. Attempting conversion.")
+            heart_rate_df_raw['timestamp'] = pd.to_datetime(heart_rate_df_raw['timestamp'], format='ISO8601', errors='coerce')
+
+        heart_rate_df_raw = heart_rate_df_raw.dropna(subset=['timestamp'])
+
+        try:
+            df_timestamp_utc = heart_rate_df_raw['timestamp'].dt.tz_convert(timezone.utc)
+            heart_rate_df = heart_rate_df_raw[
+                (df_timestamp_utc >= start_dt_for_filter) &
+                (df_timestamp_utc <= end_dt_for_filter)
+            ].copy()
+            logging.info(f"Filtered raw data ({len(heart_rate_df_raw)}) to {len(heart_rate_df)} records for period: \
+                        {start_dt_for_filter} to {end_dt_for_filter}")
+        except TypeError as te:
+            st.error("Error comparing timestamps. Check timezone consistency.")
+            logging.exception(f"TypeError during timestamp filtering: {te}")
+            heart_rate_df = pd.DataFrame()
+        except Exception as e:
+            st.error(f"An unexpected error occurred during data filtering: {e}")
+            logging.exception("Exception during data filtering")
+            heart_rate_df = pd.DataFrame()
+    else:
+        heart_rate_df = pd.DataFrame()
+
 
     if heart_rate_df.empty:
         st.warning("No heart rate data available for the selected period. Please check your connection or try another time range.")
         st.stop()
 
     st.subheader("Heart Rate Summary")
+    col_summary1, col_summary2, col_summary3 = st.columns(3)
 
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
+    with col_summary1:
         latest_hr = heart_rate_df.iloc[-1]['value']
-        hr_status = get_hr_status(latest_hr)
-        color  = get_hr_color(hr_status)
+        hr_status = get_hr_status(latest_hr) 
+        color = get_hr_color(hr_status)  
 
-        st.metric(
-            "Latest Heart Rate",
-            f"{latest_hr} BPM",
-            delta=None
-        )
+        st.metric("Latest Heart Rate", f"{latest_hr} BPM")
         st.markdown(f"<p style='color:{color}; font-weight:bold;'>{hr_status}</p>", unsafe_allow_html=True)
 
-    with col2:
+    with col_summary2:
         avg_hr = heart_rate_df['value'].mean()
         st.metric(
             "Average Heart Rate",
-            f"{avg_hr:.0f} BPM"
+            f"{avg_hr:.0f} BPM",
+            help=f"Average over the selected period ({time_description})" # Dynamic help text
         )
         st.caption(f"Based on {len(heart_rate_df)} readings")
 
-    with col3:
+    with col_summary3:
         min_hr = heart_rate_df['value'].min()
         max_hr = heart_rate_df['value'].max()
-
         st.metric("Range", f"{min_hr:.0f} - {max_hr:.0f} BPM")
         variability = heart_rate_df['value'].std()
-        st.metric("Variability", f"{variability:.1f} BPM")
+        st.metric("Variability (Std Dev)", f"{variability:.1f} BPM", help="Standard deviation over the period")
 
     # Heart Rate Chart
     st.subheader("Heart Rate Trend")
@@ -107,31 +223,39 @@ def show_heart_rate_page():
 
     if 'activity_level' in heart_rate_df.columns:
         activity_levels = sorted(heart_rate_df['activity_level'].unique())
-        #print(activity_levels)
         if len(activity_levels) > 1:
+            activity_key = f"hr_activity_filter_{user_identifier_for_cache}"
             selected_activity = st.multiselect(
-                "Filter by activity level",
+                "Filter by activity level:",
                 options=activity_levels,
-                default=activity_levels
+                default=activity_levels,
+                key=activity_key
             )
 
             if selected_activity:
-                filtered_df = heart_rate_df[heart_rate_df['activity_level'].isin(selected_activity)]
-                #print(filtered_df.head())
-                st.subheader("Heart Rate by Activity Level")
-                plot_heart_rate_by_activity(filtered_df)
+                filtered_df_activity = heart_rate_df[heart_rate_df['activity_level'].isin(selected_activity)]
+                st.subheader("Heart Rate by Selected Activity Level")
+                if not filtered_df_activity.empty:
+                     plot_heart_rate_by_activity(filtered_df_activity)
+                else:
+                    st.info("No data for the selected activity level(s) in this time period.")
+            else:
+                st.warning("Please select at least one activity level to filter.")
 
     # HRV Analysis
     if "access_token" in st.session_state and len(heart_rate_df) > 10:
+        st.divider()
         st.subheader("Heart Rate Variability (HRV)")
         run_hrv_analysis()
 
     # Baseline comparison
     if "access_token" in st.session_state and len(heart_rate_df) > 10:
+        st.divider()
         st.subheader("Baseline comparison")
         run_baseline_comparison()
 
     if "access_token" in st.session_state:
+        st.divider()
         st.subheader("Resting Heart Rate")
         run_resting_analysis()
 
