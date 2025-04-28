@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
-from .serializers import UserSerializer, CustomTokenObtainPairSerializer
-from .models import UserProfile
+from rest_framework import generics
+from .serializers import UserSerializer, CustomTokenObtainPairSerializer, PatientListSerializer
+from .models import UserProfile, Role
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -8,6 +9,7 @@ from rest_framework_simplejwt.exceptions import InvalidToken, AuthenticationFail
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from .permissions import IsDoctorOrNurseOrAdmin
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -83,6 +85,20 @@ class UserView(APIView):
         serializer = UserSerializer(request.user)
         return Response({'user': serializer.data}, status=status.HTTP_200_OK)
 
+
+class PatientListView(generics.ListAPIView):
+    """
+    API view to list patients (users who are not staff/professionals).
+    Accessible only by Doctors, Nurses, or Admins.
+    """
+    serializer_class = PatientListSerializer
+    permission_classes = [IsAuthenticated, IsDoctorOrNurseOrAdmin]
+
+    def get_queryset(self):
+        """
+        Return a list of all non-staff users (patients).
+        """
+        return UserProfile.objects.filter(role=Role.USER).order_by('last_name', 'first_name')
 
 class Logout(APIView):
     def post(self, request):

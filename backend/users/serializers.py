@@ -37,5 +37,14 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+class PatientListSerializer(serializers.ModelSerializer):
+    """
+    Serializer for listing patients, exposing only necessary fields.
+    """
+    class Meta:
+        model = UserProfile
+        fields = ['id', 'first_name', 'last_name', 'email', 'age', 'gender']
+
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = 'email'

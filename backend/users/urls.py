@@ -1,7 +1,9 @@
-from django.urls import path
-from .views import Register, Login, UserView, Logout, CustomTokenObtainPairView
+from django.urls import path, include
+from .views import Register, Login, UserView, Logout, CustomTokenObtainPairView, PatientListView
+
 
 urlpatterns = [
+    path('patients/', PatientListView.as_view(), name='patient-list'),
     path('logout', Logout.as_view()),
     path('user', UserView.as_view()),
     path('login', Login.as_view()),
