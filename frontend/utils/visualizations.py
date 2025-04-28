@@ -47,6 +47,10 @@ def plot_blood_pressure(df):
     st.plotly_chart(fig, use_container_width=True)
 
 def plot_spo2_gauge(df):
+    if df.empty:
+        st.warning("No spo2 data available")
+        return
+    
     latest_value = df['value'].iloc[-1]
 
     if latest_value < 90:
@@ -74,4 +78,18 @@ def plot_spo2_gauge(df):
     )
 
     # Show the plot
+    st.plotly_chart(fig, use_container_width=True)
+
+def plot_daily_steps(df):
+    if df.empty:
+        st.warning("No daily steps data available")
+        return
+    
+    fig = px.bar(df, 
+                x='timestamp',
+                 y='count',
+                labels={'timestamp': 'Date', 'count': 'Steps Count'},
+                title="Daily Steps Over Time")
+    
+    fig.update_layout(height=400)
     st.plotly_chart(fig, use_container_width=True)

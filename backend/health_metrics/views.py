@@ -307,7 +307,7 @@ class DailyStepsViewSet(BaseHealthMetricsViewSet):
         
         latest_steps = queryset.latest('timestamp')
 
-        weekly_avg = latest_steps.weekly_average()
+        weekly_avg = latest_steps.get_weekly_average()
 
         end_date = latest_steps.timestamp.date()
         start_date = end_date - timezone.timedelta(days=6)

@@ -10,7 +10,7 @@ from typing import Optional, List, Dict, Any
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-API_BASE_URL = st.secrets.get("API_BASE_URL", "http://localhost:8000/api")
+API_BASE_URL = "http://localhost:8000/api"
 
 
 def paginated_dataframe(
@@ -184,8 +184,7 @@ def get_heart_rate_data(days: int = 1, hours: int = 0, user_id: Optional[int] = 
     
     if all_results:
         df = pd.DataFrame(all_results)
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
-        df = df[df['timestamp'] >= start_date_obj]
+        df['timestamp'] = pd.to_datetime(df['timestamp'], format='ISO8601', errors='coerce')
         logging.info(f"Total heart rate records processed for user {user_id or 'self'} : {len(df)}")
         if not df.empty and 'activity_level' in df.columns:
             logging.info(f"Unique activity levels in final DataFrame: {df['activity_level'].unique()}")
@@ -207,7 +206,7 @@ def _get_daily_steps_pages(*, page: int, page_size: int, headers: Dict, start_da
     return _fetch_paginated_data(url, page, page_size, headers, params)
 
 
-def get_daily_steps_data(days: int = 1, user_id: Optional[int] = None) -> pd.DataFrame:
+def get_daily_steps_data(days: int = 7, user_id: Optional[int] = None) -> pd.DataFrame:
     """Get ALL Daily Steps data, using the paginated fetcher."""
     start_date_obj = datetime.now() - timedelta(days=days)
     start_date = start_date_obj.strftime('%Y-%m-%d')
@@ -226,8 +225,8 @@ def get_daily_steps_data(days: int = 1, user_id: Optional[int] = None) -> pd.Dat
     
     if all_results:
         df = pd.DataFrame(all_results)
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
-        df = df[df['timestamp'].dt.date >= start_date_obj.date()]
+        df['timestamp'] = pd.to_datetime(df['timestamp'], format='ISO8601', errors='coerce')
+        #df = df[df['timestamp'].dt.date >= start_date_obj.date()]
         logging.info(f"Total daily steps records processed for user {user_id or 'self'}: {len(df)}")
         return df.sort_values(by='timestamp').reset_index(drop=True)
     else:
@@ -265,8 +264,8 @@ def get_blood_pressure_data(days: int, user_id: Optional[int] = None):
     
     if all_results:
         df = pd.DataFrame(all_results)
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
-        df = df[df['timestamp'] >= start_date_obj]
+        df['timestamp'] = pd.to_datetime(df['timestamp'], format='ISO8601', errors='coerce')
+        #df = df[df['timestamp'] >= start_date_obj]
         logging.info(f"Total blood pressure records processed for user {user_id or 'self'}: {len(df)}")
         return df.sort_values(by='timestamp').reset_index(drop=True)
     else:
@@ -307,7 +306,7 @@ def get_sleep_duration_data(days: int = 1, user_id: Optional[int] =  None) -> pd
         for col in ['timestamp', 'start_time', 'end_time']:
             if col in df.columns:
                 df[col] = pd.to_datetime(df[col], errors='coerce')
-            df = df[df['end_time'].dt.date >= start_date_obj.date()]
+            #df = df[df['end_time'].dt.date >= start_date_obj.date()]
             logging.info(f"Total sleep duration records processed for user {user_id or 'self'}: {len(df)}")
         return df.sort_values(by='end_time').reset_index(drop=True)
     else:
@@ -345,8 +344,8 @@ def get_spo2_data(days: int = 1, user_id: Optional[int] = None) -> pd.DataFrame:
 
     if all_results:
         df = pd.DataFrame(all_results)
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
-        df = df[df['timestamp'] >= start_date_obj]
+        df['timestamp'] = pd.to_datetime(df['timestamp'], format='ISO8601', errors='coerce')
+        #df = df[df['timestamp'] >= start_date_obj]
         return df.sort_values(by='timestamp').reset_index(drop=True)
     else:
         logging.info(f"No sleep duration results fetched for user {user_id or 'self'}.")
@@ -354,7 +353,7 @@ def get_spo2_data(days: int = 1, user_id: Optional[int] = None) -> pd.DataFrame:
 
 def get_user_list() -> Optional[pd.DataFrame]:
     """Fetches the list of users accessible by the logged-in professional."""
-    url = f"{API_BASE_URL}/users/patients/"
+    url = f"{API_BASE_URL}/patients/"
     headers = get_headers()
     if not headers: return None
 
