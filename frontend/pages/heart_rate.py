@@ -32,7 +32,7 @@ def cached_get_heart_rate_data(user_identifier: str, fetch_days: int, fetch_hour
     print(f"CACHE MISS: Calling API get_heart_rate_data(days={fetch_days}, hours={fetch_hours}) for user {user_identifier}")
     return get_heart_rate_data(days=fetch_days, hours=fetch_hours, user_id=user_id)
 
-def show_heat_rate_page(user_id=None):
+def show_heart_rate_page(user_id=None):
     """Displays the Heart Rate Monitoring page"""
     current_role = st.session_state.get("role", "USER")
     if current_role not in ALLOWED_ROLES:

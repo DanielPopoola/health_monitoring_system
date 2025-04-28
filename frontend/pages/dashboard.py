@@ -1,4 +1,5 @@
 import streamlit as st
+from typing import Optional
 from utils.api import (
     get_heart_rate_data, 
     get_blood_pressure_data,
@@ -10,13 +11,18 @@ from utils.visualizations import (
     plot_spo2_gauge,
     plot_daily_steps)
 
-def show_dashboard():
-    st.title(f"Welcome to your Health Dashboard, {st.session_state.get('first_name', 'User')}")
+def show_dashboard(user_id: Optional[int] = None):
+    if user_id:
+        st.title(f"Patient Health Dashboard (ID: {user_id})")
+        st.info(f"Displaying dashboard summary for Patient ID: {user_id}")
+    else:
+        st.title(f"Welcome to your Health Dashboard, {st.session_state.get('first_name', 'User')}")
 
     time_period = st.selectbox(
         "Select time period:", 
         ["Last 1 hour", "Last 6 hours", "Last 12 hours","Last 24 hours", "Last 7 days", "Last 30 days"],
-        index=0
+        index=3,
+        key=f"dashboard_time_period_{user_id or 'self'}"
     )
     
     if time_period == "Last 1 hour":
@@ -40,10 +46,10 @@ def show_dashboard():
     
         
     # Get data
-    heart_rate_df = get_heart_rate_data(days=hr_days, hours=hr_hours)
-    blood_pressure_df = get_blood_pressure_data(other_days)
-    spo2_df =  get_spo2_data(other_days)
-    daily_steps_df = get_daily_steps_data(other_days)
+    heart_rate_df = get_heart_rate_data(days=hr_days, hours=hr_hours, user_id=user_id)
+    blood_pressure_df = get_blood_pressure_data(days=other_days, user_id=user_id)
+    spo2_df =  get_spo2_data(days=other_days, user_id=user_id)
+    daily_steps_df = get_daily_steps_data(days=other_days, user_id=user_id)
 
     # Display top metrics
     col1, col2, col3, col4 = st.columns(4)

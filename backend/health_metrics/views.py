@@ -670,7 +670,7 @@ class SpO2ViewSet(BaseHealthMetricsViewSet):
         }, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'])
-    def alert_check(self):
+    def alert_check(self, request):
         """Endpoint for alert_required function in SpO2 class"""
         queryset = self.get_queryset()
 
@@ -680,11 +680,25 @@ class SpO2ViewSet(BaseHealthMetricsViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
         
-        latests_spo2 = queryset.latest('timestamp')
+        latests_spo2_reading = queryset.latest('timestamp')
 
-        if latests_spo2:
-            if latests_spo2 < 90:
-                return Response(
-                    {"message": "Immediate attention required"},
-                    status=status.HTTP_200_OK
-                )
+        latest_value = latests_spo2_reading.value
+        timestamp = latests_spo2_reading.timestamp.isoformat()
+
+        if latest_value < 90:
+            alert_level = "critical"
+            message = f"Latest SpO2 reading ({latest_value}%) requires immediate attention."
+        elif 90 <= latest_value < 95:
+            alert_level = "warning"
+            message = f"Latest SpO2 reading ({latest_value}%) is low. Monitor closely."
+        else:
+            alert_level = "normal"
+            message = f"Latest SpO2 reading ({latest_value}%) is within the normal range."
+
+        response_data = {
+            "message": message,
+            "alert_level": alert_level,
+            "latest_value":latest_value,
+            "timestamp": timestamp
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
