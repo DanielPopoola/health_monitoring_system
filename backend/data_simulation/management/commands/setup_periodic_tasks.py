@@ -53,19 +53,19 @@ class Command(BaseCommand):
         PeriodicTask.objects.create(
             interval=heart_schedule,
             name='Generate Heart Rate',
-            task='data_simulation.tasks.generate_heart_rate_for_all_users',
+            task='data_simulation.tasks.generate_heart_rate_for_only_users',
         )
 
         PeriodicTask.objects.create(
             crontab=bp_morning,
             name='Generate Blood Pressure (Morning)',
-            task='data_simulation.tasks.generate_blood_pressure_for_all_users'
+            task='data_simulation.tasks.generate_blood_pressure_for_only_users'
         )
 
         PeriodicTask.objects.create(
             crontab=bp_evening,
             name='Generate Blood Pressure (Evening)',
-            task='data_simulation.tasks.generate_blood_pressure_for_all_users'
+            task='data_simulation.tasks.generate_blood_pressure_for_only_users'
         )
 
         PeriodicTask.objects.create(
