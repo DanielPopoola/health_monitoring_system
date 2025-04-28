@@ -10,12 +10,12 @@ from .generators import(
 
 
 @shared_task
-def generate_blood_pressure_for_all_users():
+def generate_blood_pressure_for_only_users():
     for user_profile in UserProfile.objects.filter(role=Role.USER):
         BloodPressureGenerator(user_profile).generate()
 
 @shared_task
-def generate_heart_rate_for_all_users():
+def generate_heart_rate_for_only_users():
     for user_profile in UserProfile.objects.filter(role=Role.USER):
         HeartRateGenerator(user_profile).generate()
 
