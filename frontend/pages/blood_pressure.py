@@ -12,7 +12,7 @@ import time
 refresh_interval = 5 * 1000  # milliseconds
 st_autorefresh(interval=refresh_interval, key="bp_autorefresh")
 
-ALLOWED_ROLES = ['DOCTOR', 'NURSE', 'ADMIN']
+ALLOWED_ROLES = ['DOCTOR', 'ADMIN']
 
 def show_blood_pressure_page(user_id=None):
     current_role = st.session_state.get("role", "USER")
