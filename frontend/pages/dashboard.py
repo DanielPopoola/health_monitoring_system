@@ -1,7 +1,14 @@
 import streamlit as st
-from utils.api import get_heart_rate_data, get_blood_pressure_data, get_spo2_data
-from utils.visualizations import plot_heart_rate, plot_blood_pressure, plot_spo2_gauge
-
+from utils.api import (
+    get_heart_rate_data, 
+    get_blood_pressure_data,
+    get_spo2_data,
+    get_daily_steps_data)
+from utils.visualizations import (
+    plot_heart_rate, 
+    plot_blood_pressure, 
+    plot_spo2_gauge,
+    plot_daily_steps)
 
 def show_dashboard():
     st.title(f"Welcome to your Health Dashboard, {st.session_state.get('first_name', 'User')}")
@@ -36,9 +43,10 @@ def show_dashboard():
     heart_rate_df = get_heart_rate_data(days=hr_days, hours=hr_hours)
     blood_pressure_df = get_blood_pressure_data(other_days)
     spo2_df =  get_spo2_data(other_days)
+    daily_steps_df = get_daily_steps_data(other_days)
 
     # Display top metrics
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
 
     with col1:
         if not heart_rate_df.empty:
@@ -57,6 +65,16 @@ def show_dashboard():
             latest_spo2 = spo2_df.iloc[-1]['value']
             st.metric("Latest SpO₂", f"{latest_spo2:.0f}%")
 
+    with col4:
+        if not daily_steps_df.empty:
+            latest_entry = daily_steps_df.iloc[-1]
+            latest_steps = latest_entry['count']
+            latest_goal = latest_entry.get('goal', 10000)
+            latest_date = latest_entry['timestamp']
+            st.metric("Latest Steps", f"{latest_steps:,}", help=f"Recorded on {latest_date}")
+            st.metric("Goal", f"{latest_goal}")
+
+
     # Display charts
     st.subheader("Heart Rate")
     plot_heart_rate(heart_rate_df)
@@ -66,3 +84,6 @@ def show_dashboard():
 
     st.subheader("Oxygen Saturation (SpO2)")
     plot_spo2_gauge(spo2_df)
+
+    st.subheader("Daily Steps")
+    plot_daily_steps(daily_steps_df)

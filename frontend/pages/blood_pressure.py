@@ -14,7 +14,7 @@ st_autorefresh(interval=refresh_interval, key="bp_autorefresh")
 
 ALLOWED_ROLES = ['DOCTOR', 'NURSE', 'ADMIN']
 
-def show_blood_pressure_page():
+def show_blood_pressure_page(user_id=None):
     current_role = st.session_state.get("role", "USER")
     if current_role not in ALLOWED_ROLES:
         st.error("🚫 Access Denied: You do not have permission to view this page.")
@@ -47,7 +47,7 @@ def show_blood_pressure_page():
         with st.spinner("Refreshing data..."):
             time.sleep(0.5)
 
-    blood_pressure_df = get_blood_pressure_data(days)
+    blood_pressure_df = get_blood_pressure_data(days, user_id)
 
     if blood_pressure_df.empty:
         st.warning("No blood pressure data available for the selected period. Please check your connection or try another time range.")
@@ -200,7 +200,7 @@ def plot_blood_pressure_trend(df):
 
 def run_time_of_day_analysis():
     # Display time of day analysis from custom endpoint
-    API_BASE_URL = "http://localhost:8000/api/"
+    API_BASE_URL = "http://localhost:8000/api"
     headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
 
     col1, col2 = st.columns([4, 1])

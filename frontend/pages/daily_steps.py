@@ -108,9 +108,10 @@ def show_daily_steps_page(user_id=None):
     plot_daily_steps_trend(steps_df, latest_goal)
 
 
-    if (st.session_state["access_token"] and not user_id) or (st.session_state["access_token"] and user_id):
-        st.subheader("Weekly Average Analysis")
-        run_weekly_average_analysis(user_id)
+    api_token = st.session_state.get("access_token")
+    if (api_token and not user_id) or (api_token and user_id):
+        st.subheader(f"{days}-Day Average Analysis")
+        run_weekly_average_analysis(days=days, user_id=user_id)
 
 
 def plot_daily_steps_trend(df: pd.DataFrame, goal: int | None):
@@ -135,17 +136,17 @@ def plot_daily_steps_trend(df: pd.DataFrame, goal: int | None):
         
     st.plotly_chart(fig, use_container_width=True)
 
-def run_weekly_average_analysis(user_id=None):
+def run_weekly_average_analysis(days: int, user_id=None):
     """Calls the backend endpoint for weekly average analysis and displays results."""
     API_BASE_URL = "http://localhost:8000/api"
     headers = {"Authorization": f"Bearer {st.session_state['access_token']}"}
     endpoint_url = f"{API_BASE_URL}/daily-steps/weekly_average/"
 
-    params = {}
+    params = {'days': days}
     if user_id:
         params['user_id'] = user_id
 
-    with st.spinner("Analyzing weekly average..."):
+    with st.spinner(f"Analyzing {days}-Day average..."):
         try:
             response = requests.get(endpoint_url, headers=headers, params=params)
             response.raise_for_status()
@@ -159,15 +160,15 @@ def run_weekly_average_analysis(user_id=None):
             avg_goal_percent = goal_metrics.get('average_percentage')
 
             if avg is not None:
-                st.metric("7-Day Average Steps", f"{avg:,.0f}")
+                st.metric(f"{days}-Day Average Steps", f"{avg:,.0f}")
                 st.progress(int(completeness))
-                st.caption(f"Data completeness: {completeness:.1f}% for the last 7 days.")
+                st.caption(f"Data completeness: {completeness:.1f}% for the last {days} days.")
 
                 if current_goal:
                     st.metric("Average vs Goal", f"{avg_goal_percent:.1f}%",
-                              help=f"Based on the latest goal of {current_goal:,} steps.")
+                              help=f"Based on the latest goal of {current_goal:,} steps, averaged over {days} days.")
                     if goal_metrics.get('meeting_goal'):
-                        st.success("On average, you're meeting your latest daily goal over the past week!")
+                        st.success(f"On average, you're meeting your latest daily goal over the past {days} days!")
                     else:
                         st.info("Keep pushing to meet your daily goal average")
                 else:
