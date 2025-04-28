@@ -1,5 +1,5 @@
 from celery import shared_task
-from users.models import UserProfile
+from users.models import UserProfile , Role
 from .generators import(
     BloodPressureGenerator,
     DailyStepsGenerator,
@@ -11,12 +11,12 @@ from .generators import(
 
 @shared_task
 def generate_blood_pressure_for_all_users():
-    for user_profile in UserProfile.objects.all():
+    for user_profile in UserProfile.objects.filter(role=Role.USER):
         BloodPressureGenerator(user_profile).generate()
 
 @shared_task
 def generate_heart_rate_for_all_users():
-    for user_profile in UserProfile.objects.all():
+    for user_profile in UserProfile.objects.filter(role=Role.USER):
         HeartRateGenerator(user_profile).generate()
 
 @shared_task
