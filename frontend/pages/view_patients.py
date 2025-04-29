@@ -48,7 +48,10 @@ def show_view_patients_page():
         st.stop()
 
     st.title("View Patient Data")
-    st.write(f"Logged in as {st.session_state.get('first_name', '')} ({st.session_state.get('role_display', '')})")
+    st.markdown(
+            f"<h3>Logged in as {st.session_state.get("role_display", "User")} {st.session_state.get("first_name","")}</h3>",
+            unsafe_allow_html=True
+        )
 
     with st.spinner("Loading patient list..."):
         patients_df_full = cached_get_user_list()
@@ -119,7 +122,7 @@ def show_view_patients_page():
         st.divider()
 
         all_metric_pages = {
-            "Dashboard Summary": (dashboard.show_dashboard, [ROLE_USER, ROLE_NURSE, ROLE_ADMIN]),
+            "Dashboard Summary": (dashboard.show_dashboard, [ROLE_USER, ROLE_DOCTOR, ROLE_NURSE, ROLE_ADMIN]),
             "Heart Rate": (heart_rate.show_heart_rate_page, [ROLE_DOCTOR, ROLE_NURSE, ROLE_ADMIN]),
             "Blood Pressure": (blood_pressure.show_blood_pressure_page, [ROLE_DOCTOR, ROLE_NURSE, ROLE_ADMIN]),
             "Daily Steps": (daily_steps.show_daily_steps_page, [ROLE_USER, ROLE_DOCTOR, ROLE_NURSE, ROLE_ADMIN]),
